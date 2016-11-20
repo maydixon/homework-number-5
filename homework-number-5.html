@@ -156,49 +156,38 @@ $(document).ready(function () {
 <p>Home range size gets larger with female body size.</p>
 <p><strong>Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.</strong></p>
 <p>The head of the output for the bootstrapped betas:</p>
-<pre><code>##        beta.oh   beta.x
-## [1,] -9.211364 1.017112
-## [2,] -9.211364 1.017112
-## [3,] -9.211364 1.017112
-## [4,] -9.211364 1.017112
-## [5,] -9.211364 1.017112
-## [6,] -9.211364 1.017112</code></pre>
+<pre><code>##         beta.oh    beta.x
+## [1,]  -8.866456 0.9613876
+## [2,]  -9.239404 1.0193263
+## [3,]  -8.809290 0.9586044
+## [4,]  -9.597921 1.0525738
+## [5,] -10.161639 1.1499276
+## [6,]  -9.988710 1.1034899</code></pre>
 <p><strong>Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.</strong></p>
 <p>Standard error of bootstrapped Bo and Bx:</p>
 <pre><code>##      SE bootstrapped Bo SE bootstrapped Bx
-## [1,]                  0                  0</code></pre>
+## [1,]          0.6101617         0.07822213</code></pre>
 <p>95% confidence intervals for Bo:</p>
 <pre><code>##        Bo value
-## 2.5%  -9.211364
-## 97.5% -9.211364</code></pre>
-<p>So there is a 95% chance that the true value of the intercept falls between -10.7 and -8.4.</p>
+## 2.5%  -10.66319
+## 97.5%  -8.26685</code></pre>
+<p>So there is a 95% chance that the true value of the intercept falls between -10.7 and -8.4. (aa may vary sightly bc no set.seed())</p>
 <p>95% confidence intervals for Bx:</p>
-<pre><code>##       Bx value
-## 2.5%  1.017112
-## 97.5% 1.017112</code></pre>
+<pre><code>##        Bx value
+## 2.5%  0.8863584
+## 97.5% 1.1984006</code></pre>
 <p>We are 95% chance that the true slope is between 0.89 and 1.20</p>
 <p><strong>How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?</strong></p>
 <pre><code>##                          (Intercept) log(Body_mass_female_mean)
 ## SE of original data:       0.6729346                 0.08487709
-## SE of bootstrapped data:   0.0000000                 0.00000000</code></pre>
-<p>The standard errors are very similar to the bootstrapped data. So, just one sample set is perhaps pretty good at estimating the standard error</p>
+## SE of bootstrapped data:   0.6101617                 0.07822213</code></pre>
+<p>The standard errors are very similar to the bootstrapped data, though a little smaller. So, just one sample set is perhaps pretty good at estimating the standard error</p>
 <p><strong>How does the latter compare to the 95% CI estimated from your entire dataset?</strong></p>
-<pre><code>##                                  2.5 %    97.5 %
-## (Intercept)                -10.7720889 -8.110374
-## log(Body_mass_female_mean)   0.8685707  1.204292</code></pre>
-<pre><code>##      2.5% 
-## -9.211364</code></pre>
-<pre><code>##     97.5% 
-## -9.211364</code></pre>
-<pre><code>##     2.5% 
-## 1.017112</code></pre>
-<pre><code>##    97.5% 
-## 1.017112</code></pre>
 <pre><code>##                                               2.5 %    97.5 %
 ## (Intercept)                             -10.7720889 -8.110374
 ## log(Body_mass_female_mean)                0.8685707  1.204292
-## (Intercept bootstrapped                  -9.2113636 -9.211364
-## log(Body_mass_female_mean) bootstrapped   1.0171119  1.017112</code></pre>
+## (Intercept bootstrapped                 -10.6631893 -8.266850
+## log(Body_mass_female_mean) bootstrapped   0.8863584  1.198401</code></pre>
 <p>The confidence intervals are fractionally smaller with the bootstrapped data, but practically the same. Not sure how to explain this.</p>
 <p>EXTRA CREDIT: + 2</p>
 <p>Write a FUNCTION that takes as its arguments a dataframe, “d”, a linear model, “m” (as a character string, e.g., “logHR~logBM”), a user-defined confidence interval level, “conf.level” (with default = 0.95), and a number of bootstrap replicates, “n” (with default = 1000). Your function should return a dataframe that includes: beta coefficient names; beta coefficients, standard errors, and upper and lower CI limits for the linear model based on your entire dataset; and mean beta coefficient estimates, SEs, and CI limits for those coefficients based on your bootstrap.</p>

@@ -36,7 +36,7 @@ The head of the output for the bootstrapped betas:
 beta.oh<- NULL
 beta.x<-NULL
 for (i in 1:1000) {
-      set.seed(1)
+     
     mysamp<-d[sample(1:nrow(d), replace = TRUE),]
     l<- lm(data=mysamp, log(HomeRange_km2)~ log(Body_mass_female_mean))
     s<- summary(l)
@@ -59,13 +59,14 @@ Standard error of bootstrapped Bo and Bx:
 
 ```{r}
 betas<- as.data.frame(betas)
-betas$ss.b0 <- (beta.oh-mean(betas$beta.oh))^2  #sum of squares b0
-betas$ss.bx <- (beta.x-mean(betas$beta.x))^2 #sum of squares bx
+betas$ss.b0 <- (betas$beta.oh-mean(betas$beta.oh))^2  #sum of squares b0
+betas$ss.bx <- (betas$beta.x-mean(betas$beta.x))^2 #sum of squares bx
 SD.B0<- sqrt(sum(betas$ss.b0)/(nrow(betas)-1)) # SD B0
 SD.Bx<- sqrt(sum(betas$ss.bx)/(nrow(betas)-1)) #SD BX
 tab<- cbind(SD.B0, SD.Bx)
-colnames(tab)<- c("SE bootstrapped Bo", "SE bootstrapped Bx") #presenting nicer
 
+colnames(tab)<- c("SE bootstrapped Bo", "SE bootstrapped Bx") #presenting nicer
+tab
 
 #SD.B0 
 #SD.Bx
@@ -87,7 +88,7 @@ bos
 #lower.bo
 #upper.bo
 ```
-So there is a 95% chance that the true value of the intercept falls between -10.7 and -8.4. 
+So there is a 95% chance that the true value of the intercept falls between -10.7 and -8.4. (aa may vary sightly bc no set.seed()) 
 
 95% confidence intervals for Bx:
 
@@ -118,15 +119,15 @@ SD.comp<- rbind(sm$coefficients[,"Std. Error"], bootSD)
 rownames(SD.comp)<- c("SE of original data:", "SE of bootstrapped data:")
 SD.comp
 ```
-The standard errors are  very similar to the bootstrapped data. So, just one sample set is perhaps pretty good at estimating the standard error
+The standard errors are  very similar to the bootstrapped data, though a little smaller. So, just one sample set is perhaps pretty good at estimating the standard error
 
 **How does the latter compare to the 95% CI estimated from your entire dataset?**
 ```{r}
-confint(m) #conf interval of original model
-lower.bo
-upper.bo
-lower.bx
-upper.bx
+# confint(m) #conf interval of original model
+# lower.bo
+# upper.bo
+# lower.bx
+# upper.bx
 
 CI.bo <- cbind(lower.bo, upper.bo)
 CI.bx <- cbind(lower.bx, upper.bx)
@@ -136,13 +137,13 @@ rownames(CI.boot)<-c("(Intercept bootstrapped", "log(Body_mass_female_mean) boot
 CI.all <- rbind(confint(m), CI.boot)
 CI.all
 ```
-The confidence intervals are fractionally smaller with the bootstrapped data, but practically the same. Not sure how to explain this. 
+The confidence intervals are fractionally smaller with the bootstrapped data, but practically the same. Again, the original model estimates the data pretty well without bootstrapping. 
 
 EXTRA CREDIT: + 2
 
 Write a FUNCTION that takes as its arguments a dataframe, "d", a linear model, "m" (as a character string, e.g., "logHR~logBM"), a user-defined confidence interval level, "conf.level" (with default = 0.95), and a number of bootstrap replicates, "n" (with default = 1000). Your function should return a dataframe that includes: beta coefficient names; beta coefficients, standard errors, and upper and lower CI limits for the linear model based on your entire dataset; and mean beta coefficient estimates, SEs, and CI limits for those coefficients based on your bootstrap.
 
-v This was my stab at this but it didn't go far.
+v This was my stab at this but it didn't go far. Too much to do in life! 
 ```{r, eval=FALSE}
 
 #nevermind, make it a loop later if I have time
