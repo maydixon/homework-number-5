@@ -6,50 +6,56 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE, echo=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
-Using the "KamilarAndCooperData.csv" dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).
+**Using the "KamilarAndCooperData.csv" dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).**
+
+Summarizing data:
 ```{r}
 d<-read.csv("https://raw.githubusercontent.com/difiore/ADA2016/master/KamilarAndCooperData.csv", header=TRUE, sep=",", stringsAsFactors = TRUE)
-head(d)
 colnames(d)
+
 m<-lm(data=d, log(HomeRange_km2)~ log(Body_mass_female_mean))
 sm<- summary(m)
+```
+Beta coefficients: 
+```{r}
 sm$coefficients
 ```
 So, 
 βo=-9.44
-βx=1.03
+βx=1.04
 
 Home range size gets larger with female body size. 
 
-Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
+**Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.**
 
+The head of the output for the bootstrapped betas:
 ```{r}
 beta.oh<- NULL
 beta.x<-NULL
 for (i in 1:1000) {
+      set.seed(1)
     mysamp<-d[sample(1:nrow(d), replace = TRUE),]
     l<- lm(data=mysamp, log(HomeRange_km2)~ log(Body_mass_female_mean))
     s<- summary(l)
-    sbeta.oh[i] <- s$coefficients[1,1]
-    beta.x[i] <- s$coefficients[2,1]
+    beta.oh[i] <- s$coefficients[1,1] # all the b0 values, extracted
+    beta.x[i] <- s$coefficients[2,1]# all the bx values, extracted
     
 }
-beta.oh
-beta.x
-betas<-cbind(beta.oh, beta.x)
 
+betas<-cbind(beta.oh, beta.x) #dataframe of all beta0 and betaX's
+head(betas)
 
 ```
 
 
 
-Estimate the standard error for each of your β coefficients **as the standard deviation of the sampling distribution from your bootstrap** and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.
+**Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.**
 
 
-Standard error of Bo and Bx:
+Standard error of bootstrapped Bo and Bx:
 
 ```{r}
 betas<- as.data.frame(betas)
@@ -57,34 +63,52 @@ betas$ss.b0 <- (beta.oh-mean(betas$beta.oh))^2  #sum of squares b0
 betas$ss.bx <- (beta.x-mean(betas$beta.x))^2 #sum of squares bx
 SD.B0<- sqrt(sum(betas$ss.b0)/(nrow(betas)-1)) # SD B0
 SD.Bx<- sqrt(sum(betas$ss.bx)/(nrow(betas)-1)) #SD BX
-SD.B0 
-SD.Bx
+tab<- cbind(SD.B0, SD.Bx)
+colnames(tab)<- c("SE bootstrapped Bo", "SE bootstrapped Bx") #presenting nicer
+
+
+#SD.B0 
+#SD.Bx
 ```
 
 
-95% confidence intervals for Bo and Bx
+95% confidence intervals for Bo:
 ```{r}
+library(reshape2)
 #95%CI
 #bo
-confint(betas$beta.oh, pnorm, level=0.95)
 lower.bo<- quantile(betas$beta.oh, probs=0.025)
 upper.bo<- quantile(betas$beta.oh, probs=0.975)
-lower.bo
-upper.bo
+lbo<-melt(lower.bo)
+ubo<- melt(upper.bo)
+bos<- rbind(lbo, ubo)
+colnames(bos)<-("Bo value")
+bos
+#lower.bo
+#upper.bo
 ```
 So there is a 95% chance that the true value of the intercept falls between -10.7 and -8.4. 
+
+95% confidence intervals for Bx:
+
 ```{r}
 #bo
-confint(betas$beta.oh, pnorm, level=0.95)
+
 lower.bx<- quantile(betas$beta.x, probs=0.025)
 upper.bx<- quantile(betas$beta.x, probs=0.975)
-lower.bx
-upper.bx
+lbx<-melt(lower.bx)
+ubx<- melt(upper.bx)
+bxs<- rbind(lbx, ubx)
+colnames(bxs)<-("Bx value")
+bxs
+#lower.bx
+#upper.bx
 ```
-We are 95% chance that the true slope is between 0.89 and 1.20
+
+We are 95% chance that the true slope is between 0.89 and 1.20 
 
 
-How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
+**How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?**
 ```{r}
 # sm$coefficients[,"Std. Error"] #the SE from the original data
 # SD.B0 #SE from bootstrapped data
@@ -94,9 +118,9 @@ SD.comp<- rbind(sm$coefficients[,"Std. Error"], bootSD)
 rownames(SD.comp)<- c("SE of original data:", "SE of bootstrapped data:")
 SD.comp
 ```
-The standard errors are  smaller in the bootstrapped data. 
+The standard errors are  very similar to the bootstrapped data. So, just one sample set is perhaps pretty good at estimating the standard error
 
-How does the latter compare to the 95% CI estimated from your entire dataset?
+**How does the latter compare to the 95% CI estimated from your entire dataset?**
 ```{r}
 confint(m) #conf interval of original model
 lower.bo
@@ -119,7 +143,7 @@ EXTRA CREDIT: + 2
 Write a FUNCTION that takes as its arguments a dataframe, "d", a linear model, "m" (as a character string, e.g., "logHR~logBM"), a user-defined confidence interval level, "conf.level" (with default = 0.95), and a number of bootstrap replicates, "n" (with default = 1000). Your function should return a dataframe that includes: beta coefficient names; beta coefficients, standard errors, and upper and lower CI limits for the linear model based on your entire dataset; and mean beta coefficient estimates, SEs, and CI limits for those coefficients based on your bootstrap.
 
 v This was my stab at this but it didn't go far.
-```{r}
+```{r, eval=FALSE}
 
 #nevermind, make it a loop later if I have time
 mysample <- mydata[sample(1:nrow(mydata), 50,
@@ -138,8 +162,6 @@ for (i in 1:n) {
 return(head(lmset))
 }
 bootz(d, n=1000, m="log(HomeRange_km2)~ log(Body_mass_female_mean)")
-
-The quantile() function returns, for your set of data, the observations satisfying the nth quantile.
 
 
 ```
